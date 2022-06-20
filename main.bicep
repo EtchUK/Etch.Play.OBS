@@ -37,7 +37,7 @@ param dnsprefix string = '${vmName}-vm'
 param dnsZoneName string = 'etchplay.com'
 
 @description('Public URI of PowerShell Chocolately setup script')
-var scriptLocation = 'https://gist.githubusercontent.com/daveRendon/9649e6ffeeb1669c9179fa13a7f43c5f/raw/54f6f7ba5bd2862d1972ab52c3a3c56be14c0397/ChocoInstall.ps1'
+var scriptLocation = 'https://raw.githubusercontent.com/EtchUK/Etch.Play.OBS/main/ChocoInstall.ps1'
 
 resource pip 'Microsoft.Network/publicIPAddresses@2020-08-01' = {
   name: publicIPName
