@@ -14,11 +14,14 @@
         "adminUsername": {
             "value": "etchadmin"
         },
+        "virtualNetworkId": {
+            "value": "/subscriptions/d8e6ef3e-f549-429c-9401-ed3516c1b5a6/resourceGroups/Internal/providers/Microsoft.Network/virtualNetworks/etch-servers"
+        },
         "subnetName": {
             "value": "obs"
         },
-        "scriptFileName": {
-            "value": "ChocoInstall.ps1"
+        "dnsZoneName": {
+            "value": "etchplay.com"
         },
         "chocoPackages": {
             "value": "obs-studio;obs-ndi;vlc;zoom;parsec"

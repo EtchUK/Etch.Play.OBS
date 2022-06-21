@@ -5,7 +5,7 @@ param location string = 'uksouth'
 param vmName string
 
 @description('User name for the Virtual Machine')
-param adminUsername string  ='etchadmin'
+param adminUsername string
 
 @description('Password for the Virtual Machine')
 @secure()
@@ -15,13 +15,26 @@ param adminPassword string
 param vmSize string = 'Standard_NV4as_v4'
 
 @description('Existing Virtual Network to deploy network into')
-param virtualNetworkId string = '/subscriptions/d8e6ef3e-f549-429c-9401-ed3516c1b5a6/resourceGroups/Internal/providers/Microsoft.Network/virtualNetworks/etch-servers'
+param virtualNetworkId string
 
 @description('Existing subnet to deploy network interface into')
 param subnetName string
 
-@description('PowerShell script name to execute')
-param scriptFileName string = 'ChocoInstall.ps1'
+@description('Existing DNS zone to register the VM in')
+param dnsZoneName string
+
+@description('Chocolatey PowerShell script name to execute')
+param chocoScriptFileName string = 'ChocoInstall.ps1'
+
+@description('Storage PowerShell script name to execute')
+param storageScriptFileName string = 'MountStorage.ps1'
+
+@description('Public URI of PowerShell Chocolately setup script')
+var chocoScriptLocation = 'https://raw.githubusercontent.com/EtchUK/Etch.Play.OBS/main/ChocoInstall.ps1'
+
+@description('Public URI of PowerShell Storage setup script')
+var storageScriptLocation = 'https://raw.githubusercontent.com/EtchUK/Etch.Play.OBS/main/MountStorage.ps1'
+
 
 @description('List of Chocolatey packages to install separated by a semi-colon eg. linqpad;sysinternals')
 param chocoPackages string = 'obs-studio'
@@ -32,12 +45,9 @@ var sku = 'win10-21h2-ent'
 
 var nicName = '${vmName}-nic'
 param publicIPName string = '${vmName}-pip'
-param dnsprefix string = '${vmName}-vm'
+param dnsprefix string = vmName
 
-param dnsZoneName string = 'etchplay.com'
 
-@description('Public URI of PowerShell Chocolately setup script')
-var scriptLocation = 'https://raw.githubusercontent.com/EtchUK/Etch.Play.OBS/main/ChocoInstall.ps1'
 
 resource pip 'Microsoft.Network/publicIPAddresses@2020-08-01' = {
   name: publicIPName
@@ -107,7 +117,9 @@ resource nic 'Microsoft.Network/networkInterfaces@2021-03-01' = {
     ]
     enableAcceleratedNetworking: false
     enableIPForwarding: false
-    networkSecurityGroup: nsg
+    networkSecurityGroup: {
+      id: nsg.id
+    }
   }
 }
 
@@ -127,6 +139,9 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
   location: location
   tags: {
     team: 'Play'
+  }
+  identity: {
+    type: 'SystemAssigned'
   }
   properties: {
     hardwareProfile: {
@@ -162,6 +177,26 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
   }
 }
 
+resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' = {
+  name: vmName
+  location: location
+  tags: {
+    team: 'Play'
+  }
+  kind: 'StorageV2'
+  sku: {
+    name: 'Standard_GRS'
+  }
+}
+
+resource fileshare 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-09-01' {
+  name: '${storage.name}/default/media'
+  properties: {
+    shareQuota: 5120
+    enabledProtocols: 'SMB'
+  }
+}
+
 resource vm_GPU 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
   parent: vm
   name: 'GPUDrivers'
@@ -180,6 +215,37 @@ resource vm_GPU 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
   ]
 }
 
+resource vm_AAD 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
+  parent: vm
+  name: 'AAD'
+  location: location
+  tags: {
+    displayName: 'aad'
+  }
+  properties:{
+    publisher: 'Microsoft.Azure.ActiveDirectory'
+    type: 'AADLoginForWindows'
+    typeHandlerVersion: '0.4'
+    autoUpgradeMinorVersion: true
+  }
+}
+
+resource vm_SetupBgInfo 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
+  parent: vm
+  name: 'SetupBgInfo'
+  location: location
+  tags: {
+    displayName: 'config-bginfo'
+  }
+  properties: {
+    publisher: 'Microsoft.Compute'
+    type: 'BGInfo'
+    typeHandlerVersion: '1.1'
+    settings: {}
+    protectedSettings: null
+  }
+}
+
 resource vm_SetupChocolatey 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
   parent: vm
   name: 'SetupChocolatey'
@@ -194,9 +260,30 @@ resource vm_SetupChocolatey 'Microsoft.Compute/virtualMachines/extensions@2019-0
     autoUpgradeMinorVersion: true
     settings: {
       fileUris: [
-        scriptLocation
+        chocoScriptLocation
       ]
-      commandToExecute: 'powershell -ExecutionPolicy bypass -File ${scriptFileName} -chocoPackages ${chocoPackages}'
+      commandToExecute: 'powershell -ExecutionPolicy bypass -File ${chocoScriptFileName} -chocoPackages ${chocoPackages}'
+    }
+  }
+}
+
+resource vm_MountStorage 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
+  parent: vm
+  name: 'MountStorage'
+  location: location
+  tags: {
+    displayName: 'mount-storage'
+  }
+  properties: {
+    publisher: 'Microsoft.Compute'
+    type: 'CustomScriptExtension'
+    typeHandlerVersion: '1.10'
+    autoUpgradeMinorVersion: true
+    settings: {
+      fileUris: [
+        storageScriptLocation
+      ]
+      commandToExecute: 'powershell -ExecutionPolicy bypass -File ${storageScriptFileName} -storageAccountName ${storage.name} -fileShareName ${fileshare.name} -storageAccountKey ${listKeys(storage.name, '2019-04-01').keys[0].value}'
     }
   }
 }
