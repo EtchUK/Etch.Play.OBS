@@ -194,7 +194,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   }
 }
 
-resource fileshare 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-09-01' {
+resource fileshare 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-09-01' = {
   name: '${storage.name}/default/media'
   properties: {
     shareQuota: 1024
@@ -202,7 +202,7 @@ resource fileshare 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-0
   }
 }
 
-resource vm_GPU 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
+resource vm_GPU 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = {
   parent: vm
   name: 'GPUDrivers'
   location: location
@@ -220,7 +220,7 @@ resource vm_GPU 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
   ]
 }
 
-resource vm_AAD 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
+resource vm_AAD 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = {
   parent: vm
   name: 'AAD'
   location: location
@@ -235,7 +235,7 @@ resource vm_AAD 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
   }
 }
 
-resource vm_SetupBgInfo 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
+resource vm_SetupBgInfo 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = {
   parent: vm
   name: 'SetupBgInfo'
   location: location
@@ -251,7 +251,7 @@ resource vm_SetupBgInfo 'Microsoft.Compute/virtualMachines/extensions@2019-07-01
   }
 }
 
-resource vm_SetupChocolatey 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
+resource vm_SetupChocolatey 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = {
   parent: vm
   name: 'SetupChocolatey'
   location: location
@@ -272,7 +272,7 @@ resource vm_SetupChocolatey 'Microsoft.Compute/virtualMachines/extensions@2019-0
   }
 }
 
-resource vm_MountStorage 'Microsoft.Compute/virtualMachines/extensions@2019-07-01' = {
+resource vm_MountStorage 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = {
   parent: vm
   name: 'MountStorage'
   location: location
