@@ -47,6 +47,7 @@ var nicName = '${vmName}-nic'
 param publicIPName string = '${vmName}-pip'
 param dnsprefix string = vmName
 
+var storageName =  '${vmName}${uniqueString(resourceGroup().id)}'
 var teamTag = 'Play'
 
 
@@ -179,7 +180,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
 }
 
 resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' = {
-  name: vmName
+  name: storageName
   location: location
   tags: {
     team: teamTag
@@ -281,10 +282,9 @@ resource vm_MountStorage 'Microsoft.Compute/virtualMachines/extensions@2019-07-0
     typeHandlerVersion: '1.10'
     autoUpgradeMinorVersion: true
     settings: {
-      fileUris: [
-        storageScriptLocation
-      ]
-      commandToExecute: 'powershell -ExecutionPolicy bypass -File ${storageScriptFileName} -storageAccountName ${storage.name} -fileShareName ${fileshare.name} -storageAccountKey ${listKeys(storage.name, '2019-04-01').keys[0].value}'
+      fileUris: [ storageScriptLocation ]
+#disable-next-line protect-commandtoexecute-secrets
+      commandToExecute: 'powershell -ExecutionPolicy bypass -File ${storageScriptFileName} -storageAccountName ${storage.name} -fileShareName media -storageAccountKey ${listKeys(storage.name, '2019-04-01').keys[0].value}'
     }
   }
 }
