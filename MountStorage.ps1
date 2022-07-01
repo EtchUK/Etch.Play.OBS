@@ -1,10 +1,9 @@
 
-param([Parameter(Mandatory=$true)][string]$storageAccountName)
-
-param([Parameter(Mandatory=$true)][string]$fileShareName)
-
-param([Parameter(Mandatory=$true)][string]$storageAccountKey)
-
+param(
+    [Parameter(Mandatory=$true)][string]$storageAccountName,
+    [Parameter(Mandatory=$true)][string]$fileShareName,
+    [Parameter(Mandatory=$true)][string]$storageAccountKey
+)
 
 $connectTestResult = Test-NetConnection -ComputerName $storageAccountName.file.core.windows.net -Port 445
 
