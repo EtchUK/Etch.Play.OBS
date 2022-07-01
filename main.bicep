@@ -189,12 +189,15 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   sku: {
     name: 'Standard_GRS'
   }
+  properties: {
+    accessTier: 'Hot'
+  }
 }
 
 resource fileshare 'Microsoft.Storage/storageAccounts/fileServices/shares@2021-09-01' {
   name: '${storage.name}/default/media'
   properties: {
-    shareQuota: 5120
+    shareQuota: 1024
     enabledProtocols: 'SMB'
   }
 }
