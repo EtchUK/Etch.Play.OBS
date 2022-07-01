@@ -245,7 +245,7 @@ resource vm_SetupBgInfo 'Microsoft.Compute/virtualMachines/extensions@2021-11-01
   properties: {
     publisher: 'Microsoft.Compute'
     type: 'BGInfo'
-    typeHandlerVersion: '1.1'
+    typeHandlerVersion: '2.2'
     settings: {}
     protectedSettings: null
   }
