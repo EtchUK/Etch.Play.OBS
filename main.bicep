@@ -47,13 +47,14 @@ var nicName = '${vmName}-nic'
 param publicIPName string = '${vmName}-pip'
 param dnsprefix string = vmName
 
+var teamTag = 'Play'
 
 
 resource pip 'Microsoft.Network/publicIPAddresses@2020-08-01' = {
   name: publicIPName
   location: location
   tags: {
-    team: 'Play'
+    team: teamTag
   }  
   sku: {
     name: 'Standard'
@@ -71,7 +72,7 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2021-08-01' = {
   name: '${vmName}-nsg'
   location: location
   tags: {
-    team: 'Play'
+    team: teamTag
   }
   properties: {
     securityRules: [
@@ -96,7 +97,7 @@ resource nic 'Microsoft.Network/networkInterfaces@2021-03-01' = {
   name: nicName
   location: location
   tags: {
-    team: 'Play'
+    team: teamTag
   }
   properties: {
     ipConfigurations: [
@@ -138,7 +139,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
   name: vmName
   location: location
   tags: {
-    team: 'Play'
+    team: teamTag
   }
   identity: {
     type: 'SystemAssigned'
@@ -181,7 +182,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   name: vmName
   location: location
   tags: {
-    team: 'Play'
+    team: teamTag
   }
   kind: 'StorageV2'
   sku: {
